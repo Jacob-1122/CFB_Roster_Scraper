@@ -41,7 +41,3 @@ Results will be saved in the `CFB_Rosters/` folder.
 ## Contributing
 
 Pull requests are welcome! Open an issue for bug reports or feature requests.
-
-## License
-
-MIT License
