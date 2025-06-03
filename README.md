@@ -1,12 +1,13 @@
 # CFB Roster Scraper
 
-A Python script to retrieve NCAA football rosters from 2016-2024 using the College Football Data API.
+A Python script to retrieve NCAA football rosters for a specific list of schools from 2016-2024 using the College Football Data API.
 
 ## Features
-- Fetches rosters for user-specified teams and years.
-- Saves player information, including first and last appearances, to an Excel file.
+- Fetches rosters for a pre-defined list of schools (see script) and years (2016-2024).
+- Saves player information (name, home city, home state) to an Excel file per team.
 - Handles API rate limits and retries automatically.
 - Uses environment variables for secure API key storage.
+- No user input required; just run the script.
 
 ## Installation
 
@@ -27,16 +28,21 @@ A Python script to retrieve NCAA football rosters from 2016-2024 using the Colle
 
 ## Usage
 
-Run the script and provide teams and years when prompted:
+Just run the script:
 ```bash
 python CFB_Roster_Scraper.py
 ```
 
-Results will be saved in the `CFB_Rosters/` folder.
+- The script will automatically fetch and save rosters for the specified schools and years.
+- Results will be saved in the `CFB_Rosters/` folder (which is ignored by git).
 
 ## Example Output
-- `Wisconsin_Roster.xlsx`
-- `Oregon_Roster.xlsx`
+- `CFB_Rosters/Wisconsin_Roster.xlsx`
+- `CFB_Rosters/Oregon_Roster.xlsx`
+
+## Notes
+- The `CFB_Rosters/` directory is ignored by git (see `.gitignore`).
+- Only the specified list of schools will be processed. To change the list, edit the `TEAMS` variable in the script.
 
 ## Contributing
 

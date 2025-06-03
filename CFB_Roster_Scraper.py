@@ -17,25 +17,23 @@ HEADERS = {
     "Accept": "application/json"
 }
 
-# User input for teams
-teams_input = input("Enter team names (comma-separated): ")
-TEAMS = [team.strip() for team in teams_input.split(",")]
+# Automatically set years 2016-2024
+YEARS = list(range(2016, 2025))
 
-# User input for years
-years_input = input("Enter years (comma-separated, e.g., 2016,2017,2020): ")
-YEARS = [int(year.strip()) for year in years_input.split(",")]
+# List of schools to include
+TEAMS = [
+    "Wisconsin", "Oregon", "Utah", "USC", "Texas A&M", "North Carolina State", "Texas", "Minnesota", "Kentucky", "Kansas State", "Miami (FL)", "Florida", "Florida State", "West Virginia", "Auburn", "Wake Forest", "Tennessee", "Pitt", "Ole Miss", "Washington State", "Missouri", "Louisville", "Mississippi State", "Virginia Tech", "Iowa State", "Michigan State", "Buffalo", "North Carolina", "Boston College", "Northwestern", "Stanford", "South Carolina", "UCLA", "Baylor", "Arizona State", "Texas Tech", "Duke", "Maryland", "California", "Georgia Tech", "Virginia", "Indiana", "Colorado", "Syracuse", "Oregon State", "Nebraska", "Arkansas", "Illinois", "Arizona", "Vanderbilt", "Rutgers", "Kansas"
+]
 
 SAVE_DIR = "CFB_Rosters"
 os.makedirs(SAVE_DIR, exist_ok=True)
 
-def fetch_roster(team, year):
-    """Fetches a single team's roster for a specific year."""
-    params = {"team": team, "year": year}
+def fetch_roster(year):
+    """Fetches all teams' rosters for a specific year."""
+    params = {"year": year}
     response = requests.get(BASE_URL, headers=HEADERS, params=params)
-    
     print(f"Requesting {response.url}")
     print(f"Status Code: {response.status_code}")
-    
     if response.status_code == 200:
         try:
             return response.json()
@@ -46,34 +44,47 @@ def fetch_roster(team, year):
         print("Unauthorized! Check your API key.")
         return None
     elif response.status_code == 429:
-        print(f"Rate limited! Waiting 15 seconds before retrying {team} {year}...")
+        print(f"Rate limited! Waiting 15 seconds before retrying {year}...")
         time.sleep(15)
-        return fetch_roster(team, year)  # Retry
+        return fetch_roster(year)  # Retry
     else:
-        print(f"Error fetching roster for {team} in {year}: {response.status_code}")
+        print(f"Error fetching roster for {year}: {response.status_code}")
         return None
 
-# Fetch and save rosters
-for team in TEAMS:
-    player_years = {}
-    for year in YEARS:
-        roster = fetch_roster(team, year)
-        if roster is None:
+# Dictionary to hold player data per team
+temp_team_player_years = {}
+
+for year in YEARS:
+    roster = fetch_roster(year)
+    if roster is None:
+        continue
+    for player in roster:
+        team = player.get('team', 'Unknown')
+        if team not in TEAMS:
             continue
-        
-        for player in roster:
-            first_name = player.get('firstName', 'Unknown')
-            last_name = player.get('lastName', 'Unknown')
-            name = f"{first_name} {last_name}".strip()
-            
-            if name not in player_years:
-                player_years[name] = {"Start Year": year, "End Year": year}
-            else:
-                player_years[name]["End Year"] = year
-        
-        print(f"Retrieved {team} roster for {year}")
-        time.sleep(2)
-    
+        if team not in temp_team_player_years:
+            temp_team_player_years[team] = {}
+        first_name = player.get('firstName', 'Unknown')
+        last_name = player.get('lastName', 'Unknown')
+        name = f"{first_name} {last_name}".strip()
+        home_city = player.get('homeCity', 'Unknown')
+        home_state = player.get('homeState', 'Unknown')
+        player_dict = temp_team_player_years[team]
+        if name not in player_dict:
+            player_dict[name] = {
+                # "Start Year": year,
+                # "End Year": year,
+                "Home City": home_city,
+                "Home State": home_state
+            }
+        else:
+            # player_dict[name]["End Year"] = year
+            pass
+    print(f"Retrieved all rosters for {year}")
+    time.sleep(2)
+
+# Save Excel files per team
+for team, player_years in temp_team_player_years.items():
     if player_years:
         df = pd.DataFrame.from_dict(player_years, orient="index").reset_index()
         df.rename(columns={"index": "Player"}, inplace=True)
